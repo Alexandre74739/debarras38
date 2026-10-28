@@ -100,7 +100,7 @@
 		transition: scale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.9s;
 	}
 
-	.d38-section:not(.est-vu) .d38-carte--avant::after {
+	.d38-cartes--trio:not(.est-distribue) .d38-carte--avant::after {
 		scale: 0;
 	}
 

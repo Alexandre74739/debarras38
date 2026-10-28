@@ -273,31 +273,39 @@
 		// Situations : les cartes sont distribuées comme un jeu. La carte mise
 		// en avant se pose la première ; les autres sortent de derrière elle,
 		// inclinées, et filent à leur place. Le canard flotte sur son bord
-		// (CSS, base/_animations.scss).
+		// (CSS, base/_animations.scss). La section est haute : la donne attend
+		// que les cartes elles-mêmes arrivent à l'écran, comme les rangées.
 		'.d38-cartes--trio': ( cartes, depart ) => {
 			const avant = cartes.querySelector( '.d38-carte--avant' ) ?? cartes.firstElementChild;
+			const autres = [ ...cartes.querySelectorAll( '.d38-carte' ) ].filter( ( carte ) => carte !== avant );
 			const centre = ( carte ) => {
 				const cadre = carte.getBoundingClientRect();
 
 				return [ cadre.left + cadre.width / 2, cadre.top + cadre.height / 2 ];
 			};
-			const [ x, y ] = centre( avant );
 
-			avant.style.opacity = 0;
-			animate( avant, { opacity: 1 }, { duration: 0.3, delay: depart } );
-			animate( avant, { y: [ 64, 0 ], scale: [ 0.88, 1 ] }, { type: 'spring', stiffness: 220, damping: 20, delay: depart } );
+			[ avant, ...autres ].forEach( ( carte ) => ( carte.style.opacity = 0 ) );
 
-			[ ...cartes.querySelectorAll( '.d38-carte' ) ]
-				.filter( ( carte ) => carte !== avant )
-				.forEach( ( carte, rang ) => {
-					const [ cx, cy ] = centre( carte );
-					const cote = Math.sign( cx - x ) || ( rang % 2 ? 1 : -1 );
-					const delai = depart + 0.35 + rang * 0.1;
+			inView(
+				cartes,
+				() => {
+					const [ x, y ] = centre( avant );
 
-					carte.style.opacity = 0;
-					animate( carte, { opacity: 1 }, { duration: 0.25, delay: delai } );
-					animate( carte, { x: [ x - cx, 0 ], y: [ y - cy, 0 ], rotate: [ -10 * cote, 0 ], scale: [ 0.85, 1 ] }, { type: 'spring', stiffness: 160, damping: 19, delay: delai } );
-				} );
+					cartes.classList.add( 'est-distribue' );
+					animate( avant, { opacity: 1 }, { duration: 0.3, delay: depart } );
+					animate( avant, { y: [ 64, 0 ], scale: [ 0.88, 1 ] }, { type: 'spring', stiffness: 220, damping: 20, delay: depart } );
+
+					autres.forEach( ( carte, rang ) => {
+						const [ cx, cy ] = centre( carte );
+						const cote = Math.sign( cx - x ) || ( rang % 2 ? 1 : -1 );
+						const delai = depart + 0.35 + rang * 0.1;
+
+						animate( carte, { opacity: 1 }, { duration: 0.25, delay: delai } );
+						animate( carte, { x: [ x - cx, 0 ], y: [ y - cy, 0 ], rotate: [ -10 * cote, 0 ], scale: [ 0.85, 1 ] }, { type: 'spring', stiffness: 160, damping: 19, delay: delai } );
+					} );
+				},
+				{ margin: '0px 0px -22% 0px' }
+			);
 		},
 
 		// Autres cartes : chacune se déplie depuis la gauche, l'une après l'autre.
